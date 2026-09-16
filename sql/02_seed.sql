@@ -169,15 +169,16 @@ SELECT m.movie_id, a.actor_id, 'Брюс Уэйн' FROM movies m, actors a WHERE
 INSERT INTO movie_actors (movie_id, actor_id, role_name)
 SELECT m.movie_id, a.actor_id, 'Бенуа Бланк' FROM movies m, actors a WHERE m.title = 'Достать ножи' AND a.last_name = 'Крэйг';
 
+
 INSERT INTO reviews (user_id, movie_id, rating, comment, review_date)
 SELECT 
-    (SELECT user_id FROM users ORDER BY random() LIMIT 1),
-    (SELECT movie_id FROM movies ORDER BY random() LIMIT 1),
-    floor(random() * 10 + 1)::int,
+    floor(random() * (SELECT MAX(user_id) FROM users) + 1)::int AS user_id,
+    floor(random() * (SELECT MAX(movie_id) FROM movies) + 1)::int AS movie_id,
+    floor(random() * 10 + 1)::int AS rating,
     CASE floor(random() * 3)
         WHEN 0 THEN 'Отличный фильм, всем советую!'
         WHEN 1 THEN 'Неплохо, но могло быть лучше.'
         ELSE 'Не впечатлило, ожидал большего.'
-    END,
-    CURRENT_TIMESTAMP - (random() * 365)::int * INTERVAL '1 day' 
-FROM generate_series(1, 1000) AS i;
+    END AS comment,
+    CURRENT_TIMESTAMP - (random() * 365)::int * INTERVAL '1 day' AS review_date
+FROM generate_series(1, 1000);
