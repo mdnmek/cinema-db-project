@@ -73,3 +73,45 @@ JOIN reviews r ON m.movie_id = r.movie_id
 GROUP BY m.movie_id, m.title
 HAVING COUNT(r.review_id) > 40
 ORDER BY count_reviews DESC;
+
+--средний рейтинг каждого жанра
+SELECT g.name, ROUND(AVG(r.rating),2) AS avg_rating
+FROM genres g
+JOIN movie_genres mg ON mg.genre_id = g.genre_id
+JOIN reviews r ON r.movie_id = mg.movie_id
+GROUP BY g.name
+ORDER BY avg_rating DESC;
+
+-- фильмы у которых нет ни одного отзыва
+SELECT m.title, m.release_year
+FROM movies m
+LEFT JOIN reviews r ON m.movie_id = r.movie_id
+WHERE r.review_id IS NULL
+ORDER BY m.title;
+
+-- фильмы, у которых средний рейтинг выше среднего по всем фильмам
+SELECT m.title, ROUND(AVG(r.rating), 2) AS avg_rating
+FROM movies m
+JOIN reviews r ON m.movie_id = r.movie_id
+GROUP BY m.movie_id, m.title
+HAVING AVG(r.rating) > (SELECT AVG(rating) FROM reviews)
+ORDER BY avg_rating DESC;
+
+-- пользователи, которые ни разу не оставили отзыв
+SELECT u.username, u.email
+FROM users u
+LEFT JOIN reviews r ON u.user_id = r.user_id
+WHERE r.review_id IS NULL
+ORDER BY u.username;
+
+-- актеры, которые снимались в фильмах жанра 'Драма'
+SELECT DISTINCT
+    a.first_name || ' ' || a.last_name AS actor,
+    m.title AS movie_title
+FROM actors a
+JOIN movie_actors ma ON a.actor_id = ma.actor_id
+JOIN movies m ON ma.movie_id = m.movie_id
+JOIN movie_genres mg ON m.movie_id = mg.movie_id
+JOIN genres g ON mg.genre_id = g.genre_id
+WHERE g.name = 'Драма'
+ORDER BY actor, movie_title;
